@@ -41,7 +41,7 @@ def detection(d_image, required_confidence, objects):
                 label = "{}: {:.2f}%".format(CLASSES[idx], confidence * 100)
                 print(label, '\n')
 
-path = str(input("Write directory of your images: "))
+#path = str(input("Write directory of your images: "))
 
 
 def choose():
@@ -59,9 +59,9 @@ def choose():
         if parameter >= 0:
             obj.append(parameter - 1)
     return obj
-obj = choose()
+#obj = choose()
 
-conf = float(input("Needed confidence (from 0 to 1): "))
+#conf = float(input("Needed confidence (from 0 to 1): "))
 
 
 def main_cycle(path, obj, conf=1.0):
