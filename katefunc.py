@@ -12,11 +12,13 @@ CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
            "sofa", "train", "tv monitor"]
 
 # расширения файлов, которые возможно распознатьфвв
-SUFFIXES = ['.jpg', '.jpeg']
+SUFFIXES = ['.jpg', '.jpeg', '.png']
+img_list = []
 
 
 # функция распознавания объектов
 def detection(d_image, required_confidence, objects):
+    global img_list
     # загрузить изображенние и создать для него input blob
     # ресайзингом его в 300x300 пикселей a потом нормализируя
     image = cv2.imread(d_image)
@@ -37,9 +39,9 @@ def detection(d_image, required_confidence, objects):
             idx = int(detections[0, 0, i, 1])
             if idx in objects:
                 # напечатать объект и точность
-                print(d_image)
                 label = "{}: {:.2f}%".format(CLASSES[idx], confidence * 100)
-                print(label, '\n')
+                return [d_image, label]
+
 
 #path = str(input("Write directory of your images: "))
 
@@ -64,11 +66,16 @@ def choose():
 #conf = float(input("Needed confidence (from 0 to 1): "))
 
 
-def main_cycle(path, obj, conf=1.0):
+def main_cycle(path, obj, conf=0.7):
+    imgl = []
     for dirs, folders, files in os.walk(path):
         for file in files:
             img, suff = os.path.splitext(os.path.join(dirs, file))
             if suff in SUFFIXES:
-                detection(img + suff, conf, obj)
+                huy = detection(img + suff, conf, obj)
+                if huy != None:
+                    imgl.append(huy)
         break
-#main_cycle(path, obj, conf)
+    return imgl
+#print(main_cycle(path, obj, conf))
+#print(img_list)
