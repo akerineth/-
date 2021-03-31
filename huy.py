@@ -1,71 +1,83 @@
-# img_viewer.py
+import numpy as np
+import cv2
+import os
 
-import PySimpleGUI as sg
-import os.path
+# загрузить модель с диска
+net = cv2.dnn.readNetFromCaffe('MobileNetSSD_deploy.prototxt.txt', 'MobileNetSSD_deploy.caffemodel')
 
-# First the window layout in 2 columns
+# инициализация списка имен классов которые можно распознать
+CLASSES = ["0. background", "1. aeroplane", "2. bicycle", "3. bird", "4. boat",
+           "5. bottle", "6. bus", "7. car", "8. cat", "9. chair", "10. cow", "11. dining table",
+           "12. dog", "13. horse", "14. motorbike", "15. person", "16. potted plant", "17. sheep",
+           "18. sofa", "19. train", "20. tv monitor"]
 
-file_list_column = [
-    [
-        sg.Text("Image Folder"),
-        sg.In(size=(25, 1), enable_events=True, key="-FOLDER-"),
-        sg.FolderBrowse(),
-    ],
-    [
-        sg.Listbox(
-            values=[], enable_events=True, size=(40, 20), key="-FILE LIST-"
-        )
-    ],
-]
+# расширения файлов, которые возможно распознатьфвв
+SUFFIXES = ['.jpg', '.jpeg', '.png']
+img_list = []
 
-# For now will only show the name of the file that was chosen
-image_viewer_column = [
-    [sg.Text("Choose an image from list on left:")],
-    [sg.Text(size=(40, 1), key="-TOUT-")],
-    [sg.Image(key="-IMAGE-")],
-]
 
-# ----- Full layout -----
-layout = [
-    [
-        sg.Column(file_list_column),
-        sg.VSeperator(),
-        sg.Column(image_viewer_column),
-    ]
-]
+# функция распознавания объектов
+def detection(d_image, required_confidence, objects):
+    global img_list
+    # загрузить изображенние и создать для него input blob
+    # ресайзингом его в 300x300 пикселей a потом нормализируя
+    image = cv2.imread(d_image)
+    (h, w) = image.shape[:2]
+    blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 0.007843, (300, 300), 127.5)
 
-window = sg.Window("Image Viewer", layout)
+    # прогнать blob через сеть и получить распознанные объекты и предполагаему точность
+    net.setInput(blob)
+    detections = net.forward()
 
-# Run the Event Loop
-while True:
-    event, values = window.read()
-    if event == "Exit" or event == sg.WIN_CLOSED:
+    for i in np.arange(0, detections.shape[2]):
+        # узнать точность
+        confidence = detections[0, 0, i, 2]
+
+        # убедиться что точность больше необходимой
+        if confidence >= required_confidence:
+            # извлечь индекс класса из "detections",
+            idx = int(detections[0, 0, i, 1])
+            if idx in objects:
+                # напечатать объект и точность
+                label = "{}: {:.2f}%".format(CLASSES[idx], confidence * 100)
+                return [d_image, label]
+
+
+#path = str(input("Write directory of your images: "))
+
+
+def choose():
+    print('Choose which objects must be in the picture and write their numbers, when you are done write "-1":')
+    for CLASS in CLASSES:
+        print(CLASSES.index(CLASS) + 1, ". ", CLASS)
+
+    obj = []
+    parameter = 1
+    while parameter >= 0:
+        parameter = int(input())
+        if parameter > len(CLASSES):
+            print("NO SUCH OBJECT")
+            continue
+        if parameter >= 0:
+            obj.append(parameter - 1)
+    return obj
+#obj = choose()
+
+#conf = float(input("Needed confidence (from 0 to 1): "))
+
+
+def main_cycle(path, obj, conf=0.7):
+    imgl = []
+    for dirs, folders, files in os.walk(path):
+        for file in files:
+            img, suff = os.path.splitext(os.path.join(dirs, file))
+            if suff in SUFFIXES:
+                huy = detection(img + suff, conf, obj)
+                if huy != None:
+                    imgl.append(huy)
         break
-    # Folder name was filled in, make a list of files in the folder
-    if event == "-FOLDER-":
-        folder = values["-FOLDER-"]
-        try:
-            # Get list of files in folder
-            file_list = os.listdir(folder)
-        except:
-            file_list = []
+    return imgl
 
-        fnames = [
-            f
-            for f in file_list
-            if os.path.isfile(os.path.join(folder, f))
-            and f.lower().endswith((".png", ".gif"))
-        ]
-        window["-FILE LIST-"].update(fnames)
-    elif event == "-FILE LIST-":  # A file was chosen from the listbox
-        try:
-            filename = os.path.join(
-                values["-FOLDER-"], values["-FILE LIST-"][0]
-            )
-            window["-TOUT-"].update(filename)
-            window["-IMAGE-"].update(filename=filename)
 
-        except:
-            pass
-
-window.close()
+#print(main_cycle(path, obj, conf))
+#print(img_list)
