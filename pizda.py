@@ -76,11 +76,11 @@ while True:
             pass
 
 
-    for dirs, folders, files in os.walk(os.getcwd() + '\\tmp'):
-        for file in files:
-            delt = os.path.join(os.getcwd() + '\\tmp', file)
-            os.remove(delt)
-        break
+for dirs, folders, files in os.walk(os.getcwd() + '\\tmp'):
+    for file in files:
+        delt = os.path.join(os.getcwd() + '\\tmp', file)
+        os.remove(delt)
+    break
 
 #print(path, obj)
 window.close()
