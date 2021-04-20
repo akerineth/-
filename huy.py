@@ -12,7 +12,7 @@ CLASSES = ["0. background", "1. aeroplane", "2. bicycle", "3. bird", "4. boat",
            "18. sofa", "19. train", "20. tv monitor"]
 
 # расширения файлов, которые возможно распознатьфвв
-SUFFIXES = ['.jpg', '.jpeg', '.png']
+SUFFIXES = ['.jpg', '.jpeg', '.png', '.raw', '.gif']
 img_list = []
 
 
