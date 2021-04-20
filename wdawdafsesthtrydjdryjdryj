@@ -1,27 +1,29 @@
 import PySimpleGUI as sg
-import interface as kt
+import katefunc as kt
 import os
 import random as rd
 from PIL import Image
+import cv2
 
 
 def topng(path):
     img = Image.open(path)
+    img = img.resize((400, 300))
     a = path.split("\\")[-1]
     newpath = os.getcwd() + r"\tmp\\" + str(a.split('.')[0]) + ".png"
     img.save(newpath)
-    return(newpath)
+    return newpath
 
 
 left = [[sg.Text("Введите адрес папки с изображениями")],
-          #[sg.Text("Введите адрес папки с изображениями")]
-          [sg.Input(key='-INPUT1-')],
+        # [sg.Text("Введите адрес папки с изображениями")]
+        [sg.Input(key='-INPUT1-')],
         [sg.Text('Введите номера необходимых объектов через пробел')],
-          [sg.Input(key="-INPUT2-")],
+        [sg.Input(key="-INPUT2-")],
         [sg.Text('Введите необходимую точность (от 0 до 1)')],
-          [sg.Input(key="-INPUT3-")],
-          [sg.Text(size=(40,1), key='-OUTPUT-')],
-          [sg.Button('Ok'), sg.Button('Quit')],
+        [sg.Input(key="-INPUT3-")],
+        [sg.Text(size=(40, 1), key='-OUTPUT-')],
+        [sg.Button('Ok'), sg.Button('Quit')],
         [
             sg.Listbox(
                 values=[], enable_events=True, size=(40, 20), key="-FILE LIST-"
@@ -33,7 +35,7 @@ n = "\n".join(kt.CLASSES)
 right = [
     [sg.Text(n)],
     [sg.Text(key="-TOUT-")]
-        ]
+]
 right1 = [
     [sg.Text("")],
     [sg.Text(size=(40, 1), key="-TOUT1-")],
@@ -41,16 +43,15 @@ right1 = [
 ]
 
 layout = [[sg.Column(left),
-          sg.VSeparator(),
-          sg.Column(right),
-        sg.VSeparator(),
+           sg.VSeparator(),
+           sg.Column(right),
+           sg.VSeparator(),
            sg.Column(right1)]
-         ]
-
+          ]
 
 window = sg.Window('Классификатор изображений', layout)
-
-images = []
+#window.Maximize()
+images = {}
 a = 0
 while True:
     event, values = window.read()
@@ -75,18 +76,19 @@ while True:
             filename = os.path.join(
                 path, values["-FILE LIST-"][0][0]
             )
-            print(filename)
-            if filename not in images:
-                images.append(filename)
-                filename = topng(filename)
-            print(filename)
-            window["-TOUT-"].update(filename)
-            window["-IMAGE-"].update(filename=filename)
+            #print(filename)
+            if filename not in images.keys():
+                #filename_png = topng(filename)
+                images[filename] = topng(filename)
+                im = cv2.imread(images[filename])
+
+            #print(filename)
+            #window["-TOUT-"].update(images[filename])
+            window["-IMAGE-"].update(filename=images[filename])
 
         except:
             print("ASHIPKA")
             pass
-
 
 for dirs, folders, files in os.walk(os.getcwd() + '\\tmp'):
     for file in files:
@@ -94,5 +96,5 @@ for dirs, folders, files in os.walk(os.getcwd() + '\\tmp'):
         os.remove(delt)
     break
 
-#print(path, obj)
+# print(path, obj)
 window.close()
