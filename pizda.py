@@ -47,7 +47,7 @@ layout = [[sg.Column(left),
          ]
 
 
-window = sg.Window('Window Title', layout)
+window = sg.Window('Классификатор изображений', layout)
 
 
 while True:
@@ -66,8 +66,8 @@ while True:
             filename = os.path.join(
                 path1, values["-FILE LIST-"][0][0]
             )
+            print(filename)
             filename = topng(filename)
-            print(files[0][0])
             window["-TOUT-"].update(filename)
             window["-IMAGE-"].update(filename=filename)
 
